@@ -45,5 +45,13 @@ public class User {
     @Column(nullable = false,updatable = false)
     private LocalDateTime createdAt;
 
+    public User(String name, String password, String email, Role role,boolean enabled) {
+        this.name = name;
+        this.password = password;
+        this.email = email;
+        this.role = role;
+        this.enabled = enabled;
 
+
+    }
 }
