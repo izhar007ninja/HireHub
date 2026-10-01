@@ -1,9 +1,11 @@
 package com.hirehub.hirehub_api.dto.job;
 
+import com.hirehub.hirehub_api.entity.Skill;
 import com.hirehub.hirehub_api.enums.JobStatus;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 public record UpdateJobRequest(
         @NotBlank(message = "title is required")
@@ -30,7 +32,8 @@ public record UpdateJobRequest(
         String employmentType,
 
         @NotNull(message = "Status is required (OPEN, CLOSED, DRAFT)")
-        JobStatus jobStatus
+        JobStatus jobStatus,
+        Set<String> skills
 
 ) {
 }

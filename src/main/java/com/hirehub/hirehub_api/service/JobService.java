@@ -1,31 +1,62 @@
 package com.hirehub.hirehub_api.service;
 
+import com.hirehub.hirehub_api.dto.common.PageResponse;
 import com.hirehub.hirehub_api.dto.job.CreateJobRequest;
 import com.hirehub.hirehub_api.dto.job.JobResponse;
 import com.hirehub.hirehub_api.dto.job.UpdateJobRequest;
 import com.hirehub.hirehub_api.entity.Job;
+import com.hirehub.hirehub_api.entity.Skill;
 import com.hirehub.hirehub_api.entity.User;
 import com.hirehub.hirehub_api.enums.JobStatus;
 import com.hirehub.hirehub_api.enums.Role;
 import com.hirehub.hirehub_api.exception.ResourceNotFoundException;
 import com.hirehub.hirehub_api.exception.UnauthorizedException;
 import com.hirehub.hirehub_api.repository.JobRepository;
+import com.hirehub.hirehub_api.repository.SkillRepository;
 import com.hirehub.hirehub_api.repository.UserRepository;
+import com.hirehub.hirehub_api.specifications.JobSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class JobService {
 
     private final UserRepository userRepository;
     private final JobRepository jobRepository;
+    private final SkillRepository skillRepository;
 
-    public JobService(UserRepository userRepository,JobRepository jobRepository){
+
+    public JobService(UserRepository userRepository,JobRepository jobRepository,SkillRepository skillRepository){
         this.userRepository = userRepository;
         this.jobRepository = jobRepository;
+        this.skillRepository = skillRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<JobResponse> searchJobs(
+            String keyword,
+            String location,
+            Integer minExperience,
+            Integer maxExperience,
+            String employmentType,
+            Pageable pageable,
+            String skills
+    ){
+        Specification<Job> specs = JobSpecification
+                .filterJobs(keyword,location,minExperience,maxExperience,employmentType,JobStatus.OPEN,skills);
+       Page<Job> jobPage = jobRepository.findAll(specs,pageable);
+       Page<JobResponse> jobResponsePage = jobPage.map(this::mapToResponse);
+
+       return PageResponse.of(jobResponsePage);
     }
 
 
@@ -46,6 +77,8 @@ public class JobService {
         if (recruiter.getRole()!= Role.RECRUITER){
             throw new IllegalArgumentException("Only recruiter can post jobs");
         }
+        Set<Skill> skills = resolveSkills(jobRequest.skills());
+
         Job job = Job.builder()
                 .recruiter(recruiter)
                 .jobStatus(JobStatus.OPEN)
@@ -56,6 +89,7 @@ public class JobService {
                 .location(jobRequest.location())
                 .minimumSalary(jobRequest.minSalary())
                 .maximumSalary(jobRequest.maxSalary())
+                .skills(skills)
                 .build();
         jobRepository.save(job);
 
@@ -74,11 +108,38 @@ public class JobService {
 
 
 
+    private Set<Skill> resolveSkills(Set<String> rawSkills){
+        if (rawSkills==null || rawSkills.isEmpty()){
+            return new HashSet<>();
+        }
+
+        Set<Skill> resolvedSkills = new HashSet<>();
+
+        for (String rawName:rawSkills){
+            if (rawName==null || rawName.trim().isEmpty()) continue;
+            Skill s = skillRepository.findByNameIgnoreCase(rawName)
+                    .orElseGet(()->skillRepository.save(new Skill(rawName)));
+            resolvedSkills.add(s);
+        }
+        return resolvedSkills;
+
+    }
+
+
+
+
     private JobResponse mapToResponse(Job job){
+        Set<String> s = new HashSet<>();
+        if (!job.getSkills().isEmpty()) {
+         s =job.getSkills()
+                    .stream()
+                    .map(Skill::getName)
+                    .collect(Collectors.toSet());
+        }
         return new JobResponse(job.getId(),job.getTitle(),job.getDescription(),
                 job.getLocation(), job.getEmploymentType(), job.getMinimumSalary(),
                 job.getMaximumSalary(),job.getExperienceRequired(),
-                job.getRecruiter().getId(),job.getRecruiter().getName(),job.getJobStatus(),job.getCreatedAt());
+                job.getRecruiter().getId(),job.getRecruiter().getName(),job.getJobStatus(),s,job.getCreatedAt());
 
     }
 
@@ -108,6 +169,13 @@ public class JobService {
         job.setMinimumSalary(jobRequest.minSalary());
         job.setMaximumSalary(jobRequest.maxSalary());
         job.setExperienceRequired(jobRequest.experienceRequired());
+
+        Set<String> rawSkills = jobRequest.skills();
+        if (rawSkills!=null && !rawSkills.isEmpty()){
+            Set<Skill> newSkills = resolveSkills(rawSkills);
+            job.setSkills(newSkills);
+        }
+
 
         return mapToResponse(jobRepository.save(job));
 

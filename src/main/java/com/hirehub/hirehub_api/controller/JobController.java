@@ -1,11 +1,15 @@
 package com.hirehub.hirehub_api.controller;
 
 
+import com.hirehub.hirehub_api.dto.common.PageResponse;
 import com.hirehub.hirehub_api.dto.job.CreateJobRequest;
 import com.hirehub.hirehub_api.dto.job.JobResponse;
 import com.hirehub.hirehub_api.dto.job.UpdateJobRequest;
 import com.hirehub.hirehub_api.service.JobService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,16 +38,33 @@ public class JobController {
         return ResponseEntity.status(HttpStatus.CREATED).body(jobResponse);
     }
 
+
+    @GetMapping
+    public ResponseEntity<PageResponse<JobResponse>> searchJob(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) Integer minExperience,
+            @RequestParam(required = false) Integer maxExperience,
+            @RequestParam(required = false) String employmentType,
+            @RequestParam(required = false) String skill,
+            @PageableDefault(page = 0,size = 10,sort = "createdAt", direction = Sort.Direction.DESC)Pageable pageable
+
+            ){
+        PageResponse<JobResponse> jobResponsePageResponse = jobService.searchJobs(keyword,location,minExperience,maxExperience,employmentType,pageable,skill);
+        return ResponseEntity.ok(jobResponsePageResponse);
+    }
+
+
     @GetMapping("/{id}")
     public ResponseEntity<JobResponse> getJobById(@PathVariable Long id){
         return ResponseEntity.ok(jobService.getJobById(id));
     }
 
-    @GetMapping
-    public ResponseEntity<List<JobResponse>> getAllOpenJobs(){
-        List<JobResponse> allOpenJobs = jobService.getAllOpenJobs();
-        return ResponseEntity.ok(allOpenJobs);
-    }
+//    @GetMapping
+//    public ResponseEntity<List<JobResponse>> getAllOpenJobs(){
+//        List<JobResponse> allOpenJobs = jobService.getAllOpenJobs();
+//        return ResponseEntity.ok(allOpenJobs);
+//    }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('RECRUITER')")

@@ -1,8 +1,11 @@
 package com.hirehub.hirehub_api.dto.job;
 
+import com.hirehub.hirehub_api.entity.Skill;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 public record CreateJobRequest(
 
@@ -27,8 +30,9 @@ public record CreateJobRequest(
         Integer experienceRequired,
 
         @NotBlank(message = "employment type cannot be blank")
-        String employmentType
+        String employmentType,
 
+        Set<String> skills
 
 ) {
 }
