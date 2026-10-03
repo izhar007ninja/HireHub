@@ -65,7 +65,6 @@ public class JwtService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-
     }
 
     private SecretKey getSignInKey(){

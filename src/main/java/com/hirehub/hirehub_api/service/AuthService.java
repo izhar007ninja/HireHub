@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -45,6 +46,8 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
     }
 
+
+    @Transactional
     public void register(RegisterRequest request){
         if (userRepository.existsByEmail(request.email())){
             throw new IllegalArgumentException("Email already exist");
@@ -63,6 +66,7 @@ public class AuthService {
 
     }
 
+    @Transactional
     public LogInResponse login(LogInRequest request){
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(),request.password())
