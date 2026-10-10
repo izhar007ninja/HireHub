@@ -5,6 +5,7 @@ import com.hirehub.hirehub_api.dto.auth.LogInResponse;
 import com.hirehub.hirehub_api.dto.auth.RegisterRequest;
 import com.hirehub.hirehub_api.service.AuthService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,7 +25,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<String> register( @Valid @RequestBody RegisterRequest registerRequest){
         authService.register(registerRequest);
-        return ResponseEntity.ok("User registered successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body("User Created successfully");
     }
 
     @PostMapping("/login")

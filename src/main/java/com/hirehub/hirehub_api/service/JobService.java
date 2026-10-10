@@ -164,7 +164,7 @@ public class JobService {
         job.setTitle(jobRequest.title());
         job.setJobStatus(jobRequest.jobStatus());
         job.setDescription(jobRequest.description());
-        job.setLocation(jobRequest.description());
+        job.setLocation(jobRequest.location());
         job.setEmploymentType(jobRequest.employmentType());
         job.setMinimumSalary(jobRequest.minSalary());
         job.setMaximumSalary(jobRequest.maxSalary());

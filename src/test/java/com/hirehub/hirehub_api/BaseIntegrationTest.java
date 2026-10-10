@@ -1,8 +1,7 @@
 package com.hirehub.hirehub_api;
 
+import tools.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hirehub.hirehub_api.dto.auth.LogInRequest;
 import com.hirehub.hirehub_api.dto.auth.RegisterRequest;
 import com.hirehub.hirehub_api.enums.Role;

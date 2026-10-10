@@ -7,6 +7,7 @@ import com.hirehub.hirehub_api.dto.application.UpdateApplicationStatusRequest;
 import com.hirehub.hirehub_api.service.ApplicationService;
 import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,7 +36,7 @@ public class ApplicationController {
                 .applyToJob(jobId,userDetails.getUsername(),applyRequest
                 );
 
-        return ResponseEntity.ok(applicationResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(applicationResponse);
     }
 
     @GetMapping("/applications/me")
@@ -52,7 +53,7 @@ public class ApplicationController {
         return ResponseEntity.ok(applicationResponse);
     }
 
-    @GetMapping("/recruiter/{jobId}/applications")
+    @GetMapping("/recruiter/jobs/{jobId}/applications")
     @PreAuthorize("hasRole('RECRUITER')")
     public ResponseEntity<List<ApplicationResponse>>
     getApplicationsForJob(@PathVariable Long jobId,
@@ -65,7 +66,7 @@ public class ApplicationController {
      return ResponseEntity.ok(applicationResponses);
     }
 
-    @PutMapping("/applications/{id}/status")
+    @PatchMapping("/applications/{id}/status")
     @PreAuthorize("hasRole('RECRUITER')")
     public ResponseEntity<ApplicationResponse> updateStatus(@PathVariable Long id,
                                                             @AuthenticationPrincipal UserDetails userDetails,
