@@ -74,4 +74,5 @@ public class Job {
     private Set<Skill> skills = new HashSet<>();
 
 
+
 }

@@ -26,17 +26,19 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService userDetailsService;
-
+    private final DelegatedAuthenticationEntryPoint authenticationEntryPoint;
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                          CustomUserDetailsService userDetailsService){
+                          CustomUserDetailsService userDetailsService,DelegatedAuthenticationEntryPoint authenticationEntryPoint){
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.userDetailsService = userDetailsService;
+        this.authenticationEntryPoint = authenticationEntryPoint;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .exceptionHandling(ex->ex.authenticationEntryPoint(authenticationEntryPoint))
                 .authorizeHttpRequests(auth->auth
                         .requestMatchers("/api/auth/**", "/v3/api-docs/**","/swagger-ui/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -46,8 +48,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,"/api/jobs/**").hasRole("RECRUITER")
                         .requestMatchers(HttpMethod.PUT,"/api/jobs/**").hasRole("RECRUITER")
                         .requestMatchers(HttpMethod.DELETE,"/api/jobs/**").hasRole("RECRUITER")
-                        .requestMatchers("/api/recruiter/**").hasRole("RECRUITER")
-                        .requestMatchers("/api/candidate/**").hasRole("CANDIDATE")
+                        .requestMatchers("/api/recruiters/**").hasRole("RECRUITER")
+                        .requestMatchers("/api/candidates/**").hasRole("CANDIDATE")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

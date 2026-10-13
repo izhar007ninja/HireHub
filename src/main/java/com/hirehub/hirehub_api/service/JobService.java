@@ -102,7 +102,7 @@ public class JobService {
     @Transactional(readOnly = true)
     public JobResponse getJobById(Long id){
         Job job = jobRepository.findById(id).orElseThrow(()->
-                new IllegalArgumentException("Job with "+id+" id is not found"));
+                new ResourceNotFoundException("Job with "+id+" id is not found"));
         return mapToResponse(job);
     }
 
