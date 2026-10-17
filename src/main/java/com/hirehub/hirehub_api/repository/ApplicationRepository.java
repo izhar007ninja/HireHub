@@ -2,6 +2,7 @@ package com.hirehub.hirehub_api.repository;
 
 
 import com.hirehub.hirehub_api.entity.Application;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,8 +14,14 @@ import java.util.Optional;
 public interface ApplicationRepository extends JpaRepository<Application,Long> {
     boolean existsByJobIdAndCandidateId(Long jobId, Long candidateId);
 
+
+    @EntityGraph(attributePaths = {"job,candidate,job.recruiter"})
     List<Application> findByCandidateIdOrderByAppliedAtDesc(Long candidateId);
+
+    @EntityGraph(attributePaths = {"job","candidate","job.recruiter"})
     List<Application> findByJobIdOrderByAppliedAtDesc(Long jobId);
+
+
     Optional<Application> findByIdAndCandidateId(Long id,Long candidateId);
 
 

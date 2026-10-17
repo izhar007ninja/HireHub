@@ -1,5 +1,6 @@
 package com.hirehub.hirehub_api.service;
 
+import com.hirehub.hirehub_api.config.RedisConfig;
 import com.hirehub.hirehub_api.dto.common.PageResponse;
 import com.hirehub.hirehub_api.dto.job.CreateJobRequest;
 import com.hirehub.hirehub_api.dto.job.JobResponse;
@@ -15,6 +16,8 @@ import com.hirehub.hirehub_api.repository.JobRepository;
 import com.hirehub.hirehub_api.repository.SkillRepository;
 import com.hirehub.hirehub_api.repository.UserRepository;
 import com.hirehub.hirehub_api.specifications.JobSpecification;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -42,6 +45,9 @@ public class JobService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = RedisConfig.JOB_SEARCH_CACHE,
+    key = "{#keyword, #location, #minExperience, #maxExperience, #employmentType, #pagable.pageNumber, #pagable.sort, #pagable}"
+    )
     public PageResponse<JobResponse> searchJobs(
             String keyword,
             String location,
@@ -70,6 +76,7 @@ public class JobService {
 
 
     @Transactional
+    @CacheEvict(value = RedisConfig.JOB_SEARCH_CACHE, allEntries = true)
     public JobResponse createJob(CreateJobRequest jobRequest,String recruiterEmail){
         User recruiter = userRepository.findByEmail(recruiterEmail)
                 .orElseThrow(()->
@@ -100,6 +107,7 @@ public class JobService {
 
 
     @Transactional(readOnly = true)
+    @Cacheable(value = RedisConfig.JOB_CACHE,key = "#id")
     public JobResponse getJobById(Long id){
         Job job = jobRepository.findById(id).orElseThrow(()->
                 new ResourceNotFoundException("Job with "+id+" id is not found"));
@@ -155,6 +163,7 @@ public class JobService {
 
 
     @Transactional
+    @CacheEvict(value = RedisConfig.JOB_CACHE, key = "#jobId")
     public JobResponse updateJob(Long jobId, String recruiterEmail, UpdateJobRequest jobRequest){
         Job job = getJobEntityById(jobId);
 
@@ -188,11 +197,17 @@ public class JobService {
     }
 
     @Transactional
+    @CacheEvict(value = RedisConfig.JOB_CACHE, key = "#jobId")
     public void deleteJob(Long jobId,String recruiterEmail){
         User recruiter = getUserByEmail(recruiterEmail);
         Job job = getJobEntityById(jobId);
         validateJob(job,recruiter);
         jobRepository.delete(job);
+
+    }
+
+    @CacheEvict(value = RedisConfig.JOB_SEARCH_CACHE,allEntries = true)
+    public void evictSearchCache(){
 
     }
 

@@ -114,7 +114,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex,HttpServletRequest request){
         ErrorResponse errorResponse = ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",
-                "An unexpected Error occurred. Please Contact the Support team",
+                "An unexpected Error occurred. Please Contact the Support team "+ex.getMessage() ,
                 request.getRequestURI()
                 );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
