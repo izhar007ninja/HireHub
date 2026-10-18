@@ -40,7 +40,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(ex->ex.authenticationEntryPoint(authenticationEntryPoint))
                 .authorizeHttpRequests(auth->auth
-
+                        .requestMatchers(HttpMethod.GET,"/api/resume/**").authenticated()
+                        .requestMatchers(HttpMethod.POST,"/api/resume/**").hasRole("CANDIDATE")
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/v3/api-docs/**",
