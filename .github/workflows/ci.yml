@@ -49,12 +49,23 @@ jobs:
 
       - name: Run Tests with Maven
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3307/test_database?useSSL=false&allowPublicKeyRetrieval=true
+          SPRING_PROFILES_ACTIVE: test
+
+          # MySQL
+          SPRING_DATASOURCE_URL: "jdbc:mysql://localhost:3307/test_database?useSSL=false&allowPublicKeyRetrieval=true"
+          SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
           SPRING_DATASOURCE_USERNAME: root
           SPRING_DATASOURCE_PASSWORD: testpassword
+
+          # Redis
+          SPRING_DATA_REDIS_URL: "redis://localhost:6379"
+          REDIS_URL: "redis://localhost:6379"
           SPRING_DATA_REDIS_HOST: localhost
           SPRING_DATA_REDIS_PORT: "6379"
-          HIREHUB_JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+
+          # JWT
+          HIREHUB_JWT_SECRET: ${{ secrets.HIREHUB_TEST_JWT_SECRET }}
+
         run: mvn clean verify --batch-mode
 
       - name: Publish Test Results
