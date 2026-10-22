@@ -1,0 +1,59 @@
+
+services:
+  # Spring Boot Backend - FREE
+  - type: web
+    name: hirehub-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+
+    healthCheckPath: /swagger-ui.html
+
+    envVars:
+      # Spring Boot
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+
+      # External MySQL Database
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+
+      # Redis
+      - key: SPRING_DATA_REDIS_URL
+        fromService:
+          type: keyvalue
+          name: hirehub-redis
+          property: connectionString
+
+      # JWT
+      - key: HIREHUB_JWT_SECRET
+        generateValue: true
+
+      - key: HIREHUB_JWT_EXPIRATION_MS
+        value: "86400000"
+
+      # Temporary resume storage
+      - key: HIREHUB_STORAGE_UPLOAD_DIR
+        value: /tmp/hirehub/resumes
+
+      - key: HIREHUB_STORAGE_BASE_URL
+        value: https://hirehub-api.onrender.com/api/resumes
+
+      # Java memory settings
+      - key: JAVA_TOOL_OPTIONS
+        value: "-XX:MaxRAMPercentage=65.0"
+
+  # Redis-compatible cache - FREE
+  - type: keyvalue
+    name: hirehub-redis
+    plan: free
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []

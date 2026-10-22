@@ -1,0 +1,68 @@
+
+name: HireHub CI - Build and Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    name: Run Unit and Integration Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: testpassword
+          MYSQL_DATABASE: test_database
+        ports:
+          - "3307:3306"
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -ptestpassword"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - "6379:6379"
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: maven
+
+      - name: Run Tests with Maven
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3307/test_database?useSSL=false&allowPublicKeyRetrieval=true
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: testpassword
+          SPRING_DATA_REDIS_HOST: localhost
+          SPRING_DATA_REDIS_PORT: "6379"
+          HIREHUB_JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+        run: mvn clean verify --batch-mode
+
+      - name: Publish Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+          if-no-files-found: warn

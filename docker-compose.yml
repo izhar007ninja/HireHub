@@ -6,10 +6,10 @@ services:
     container_name: hirehub_mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: X
+      MYSQL_ROOT_PASSWORD: irshad1234
       MYSQL_DATABASE: hirehub_db
       MYSQL_USER: hirehub_user
-      MYSQL_PASSWORD: X
+      MYSQL_PASSWORD: irshad1234
     ports:
       - "3307:3306"
     volumes:
@@ -61,7 +61,7 @@ services:
       SPRING_DATA_REDIS_PORT: 6379
       HIREHUB_STORAGE_UPLOAD_DIR: /app/uploads/resumes
       HIREHUB_STORAGE_BASE_URL: http://localhost:8080/api/resumes
-      HIREHUB_JWT_SECRET: X
+      HIREHUB_JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
     volumes:
       - resume_uploads:/app/uploads/resumes
     networks:
