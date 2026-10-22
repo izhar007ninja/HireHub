@@ -21,7 +21,7 @@ public class JwtService {
     @Value("${hirehub.jwt.secret}")
     private String secretKey;
 
-    @Value("${hirehub.jwt.expiration}")
+    @Value("${hirehub.jwt.expiration-ms}")
     private long jwtExpiration;
 
 

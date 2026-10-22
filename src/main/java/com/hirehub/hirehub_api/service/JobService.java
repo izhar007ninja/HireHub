@@ -18,6 +18,7 @@ import com.hirehub.hirehub_api.repository.UserRepository;
 import com.hirehub.hirehub_api.specifications.JobSpecification;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -45,8 +46,9 @@ public class JobService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = RedisConfig.JOB_SEARCH_CACHE,
-    key = "{#keyword, #location, #minExperience, #maxExperience, #employmentType, #pagable.pageNumber, #pagable.sort, #pagable}"
+    @Cacheable(
+            value = RedisConfig.JOB_SEARCH_CACHE,
+            key = "{#p0, #p1, #p2, #p3, #p4, #p5.pageNumber, #p5.pageSize, #p5.sort.toString(), #p6}"
     )
     public PageResponse<JobResponse> searchJobs(
             String keyword,
@@ -163,7 +165,10 @@ public class JobService {
 
 
     @Transactional
-    @CacheEvict(value = RedisConfig.JOB_CACHE, key = "#jobId")
+    @Caching(evict = {
+            @CacheEvict(value = RedisConfig.JOB_CACHE, key = "#p0"),
+            @CacheEvict(value = RedisConfig.JOB_SEARCH_CACHE, allEntries = true)
+    })
     public JobResponse updateJob(Long jobId, String recruiterEmail, UpdateJobRequest jobRequest){
         Job job = getJobEntityById(jobId);
 
@@ -197,7 +202,10 @@ public class JobService {
     }
 
     @Transactional
-    @CacheEvict(value = RedisConfig.JOB_CACHE, key = "#jobId")
+    @Caching(evict = {
+            @CacheEvict(value = RedisConfig.JOB_CACHE, key = "#p0"),
+            @CacheEvict(value = RedisConfig.JOB_SEARCH_CACHE, allEntries = true)
+    })
     public void deleteJob(Long jobId,String recruiterEmail){
         User recruiter = getUserByEmail(recruiterEmail);
         Job job = getJobEntityById(jobId);
