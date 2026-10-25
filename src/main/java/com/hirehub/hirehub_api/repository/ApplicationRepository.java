@@ -15,10 +15,18 @@ public interface ApplicationRepository extends JpaRepository<Application,Long> {
     boolean existsByJobIdAndCandidateId(Long jobId, Long candidateId);
 
 
-    @EntityGraph(attributePaths = {"job,candidate,job.recruiter"})
+    @EntityGraph(attributePaths = {
+            "job",
+            "candidate",
+            "job.recruiter"
+    })
     List<Application> findByCandidateIdOrderByAppliedAtDesc(Long candidateId);
 
-    @EntityGraph(attributePaths = {"job","candidate","job.recruiter"})
+    @EntityGraph(attributePaths = {
+            "job",
+            "candidate",
+            "job.recruiter"
+    })
     List<Application> findByJobIdOrderByAppliedAtDesc(Long jobId);
 
 

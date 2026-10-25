@@ -1,23 +1,29 @@
-version: '3.8'
 
 services:
   mysql:
     image: mysql:8.0
     container_name: hirehub_mysql
     restart: always
+
     environment:
-      MYSQL_ROOT_PASSWORD: irshad1234
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
       MYSQL_DATABASE: hirehub_db
       MYSQL_USER: hirehub_user
-      MYSQL_PASSWORD: irshad1234
+      MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD:?Set MYSQL_APP_PASSWORD in .env}
+
     ports:
       - "3307:3306"
+
     volumes:
       - mysql_data:/var/lib/mysql
+
     networks:
       - hirehub-network
+
     healthcheck:
-      test: [ "CMD-SHELL", "MYSQL_PWD=$$MYSQL_PASSWORD mysql -h 127.0.0.1 -u $$MYSQL_USER $$MYSQL_DATABASE -e 'SELECT 1'" ]
+      test:
+        - CMD-SHELL
+        - MYSQL_PWD="$$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u "$$MYSQL_USER" "$$MYSQL_DATABASE" -e "SELECT 1"
       interval: 10s
       timeout: 5s
       retries: 10
@@ -27,54 +33,62 @@ services:
     image: redis:7-alpine
     container_name: hirehub_redis
     restart: always
+
     ports:
       - "6379:6379"
+
     volumes:
       - redis_data:/data
+
     networks:
-    - hirehub-network
+      - hirehub-network
+
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-
 
   backend:
     build:
       context: .
       dockerfile: Dockerfile
+
     container_name: hirehub-api
     restart: always
+
     depends_on:
       mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
+
     ports:
       - "8080:8080"
+
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/hirehub_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/hirehub_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: hirehub_user
-      SPRING_DATASOURCE_PASSWORD: hirehub_password
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_APP_PASSWORD:?Set MYSQL_APP_PASSWORD in .env}
+
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
+
       HIREHUB_STORAGE_UPLOAD_DIR: /app/uploads/resumes
       HIREHUB_STORAGE_BASE_URL: http://localhost:8080/api/resumes
-      HIREHUB_JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+
+      HIREHUB_JWT_SECRET: ${HIREHUB_JWT_SECRET:?Set HIREHUB_JWT_SECRET in .env}
+
     volumes:
       - resume_uploads:/app/uploads/resumes
+
     networks:
       - hirehub-network
 
-
 volumes:
   mysql_data:
-    driver: local
   redis_data:
-    driver: local
   resume_uploads:
-    driver: local
 
 networks:
   hirehub-network:

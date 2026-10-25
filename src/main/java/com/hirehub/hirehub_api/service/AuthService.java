@@ -7,6 +7,7 @@ import com.hirehub.hirehub_api.entity.CandidateProfile;
 import com.hirehub.hirehub_api.entity.RecruiterProfile;
 import com.hirehub.hirehub_api.entity.User;
 import com.hirehub.hirehub_api.enums.Role;
+import com.hirehub.hirehub_api.exception.BadRequestException;
 import com.hirehub.hirehub_api.repository.CandidateProfileRepository;
 import com.hirehub.hirehub_api.repository.UserRepository;
 import com.hirehub.hirehub_api.repository.RecruiterProfileRepository;
@@ -57,6 +58,13 @@ public class AuthService {
                 request.email(), request.role(),true);
         User savedUser = userRepository.save(user);
 
+        if (request.role() != Role.CANDIDATE &&
+                request.role() != Role.RECRUITER) {
+
+            throw new BadRequestException(
+                    "Only candidates and recruiters can register"
+            );
+        }
         if(request.role()== Role.CANDIDATE){
             candidateProfileRepository.save(CandidateProfile.builder().user(savedUser).build());
         }

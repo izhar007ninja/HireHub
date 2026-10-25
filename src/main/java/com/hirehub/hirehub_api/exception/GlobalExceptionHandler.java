@@ -128,8 +128,9 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = ErrorResponse.of(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",
-                "An unexpected error occurred. Please contact support.",
+                "An unexpected error occurred. Please contact support."+ex,
                 request.getRequestURI()
+
         );
 
         return ResponseEntity

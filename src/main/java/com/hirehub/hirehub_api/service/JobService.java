@@ -48,7 +48,7 @@ public class JobService {
     @Transactional(readOnly = true)
     @Cacheable(
             value = RedisConfig.JOB_SEARCH_CACHE,
-            key = "{#p0, #p1, #p2, #p3, #p4, #p5.pageNumber, #p5.pageSize, #p5.sort.toString(), #p6}"
+            key = "{#p0, #p1, #p2, #p3, #p4, #p5, #p6}"
     )
     public PageResponse<JobResponse> searchJobs(
             String keyword,
