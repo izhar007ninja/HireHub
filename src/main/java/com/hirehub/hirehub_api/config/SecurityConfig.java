@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(ex->ex.authenticationEntryPoint(authenticationEntryPoint))
                 .authorizeHttpRequests(auth->auth
+                        .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/resume/**").authenticated()
                         .requestMatchers(HttpMethod.POST,"/api/resume/**").hasRole("CANDIDATE")
                         .requestMatchers(
